@@ -1,0 +1,90 @@
+#  - feature/MIEB-123-arobbin138-MultiClusterTest
+jobs:
+- job: MultiClusterDeploymTest
+  displayName: 'MultiClusterDeploymentTest'
+  pool:
+    vmImage: 'ubuntu-latest'
+
+  steps:
+  - task: bash@3
+    inputs:
+      targetType: 'inline'
+      script: |
+        apt-get update & apt-get install build-essential procps curl file libxml2-utils -y
+        /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+        eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+        brew install kubectl kuttl
+        curl -s https://raw.githubusercontent.com/rancher/k3d/main/install.sh | bash
+        curl -sSL -o argocd-linux-amd64 https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64
+        install -m 555 argocd-linux-amd64 /usr/local/bin/argocd
+        rm argocd-linux-amd64
+        sed -i 's/\r$//' .pipelines/run-e2e-tests.sh
+        chmod +x .pipelines/run-e2e-tests.sh
+
+        kubectl-kuttl -v
+    displayName: 'Install prereq tools'
+    env:
+      REPO_PAT: $(REPO_PAT)
+      MANIFESTS_REPO: $(MANIFESTS_REPO)
+      APP_K8S_REPO: $(APP_K8S_REPO)
+      MANIFEST_RAW_URL: $(MANIFEST_RAW_URL)
+
+  - task: bash@3
+    inputs:
+      filePath: ./.pipelines/run-e2e-tests.sh
+      arguments: k3d
+    displayName: 'Deploy k3d infrastructure'
+    env:
+      REPO_PAT: $(REPO_PAT)
+      MANIFESTS_REPO: $(MANIFESTS_REPO)
+      APP_K8S_REPO: $(APP_K8S_REPO)
+      MANIFEST_RAW_URL: $(MANIFEST_RAW_URL)
+
+  - task: bash@3
+    inputs:
+      filePath: ./.pipelines/run-e2e-tests.sh
+      arguments: argocd
+    displayName: 'Deploy Argo CD'
+    env:
+      REPO_PAT: $(REPO_PAT)
+      MANIFESTS_REPO: $(MANIFESTS_REPO)
+      APP_K8S_REPO: $(APP_K8S_REPO)
+      MANIFEST_RAW_URL: $(MANIFEST_RAW_URL)
+
+  - task: bash@3
+    inputs:
+      filePath: ./.pipelines/run-e2e-tests.sh
+      arguments: manifests
+    displayName: 'Deploy k3d manifests'
+    env:
+      REPO_PAT: $(REPO_PAT)
+      MANIFESTS_REPO: $(MANIFESTS_REPO)
+      APP_K8S_REPO: $(APP_K8S_REPO)
+      MANIFEST_RAW_URL: $(MANIFEST_RAW_URL)
+
+  - task: bash@3
+    inputs:
+      targetType: 'inline'
+      script: |
+        eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+        ./.pipelines/run-e2e-tests.sh test
+    displayName: 'Execute tests'
+    env:
+      REPO_PAT: $(REPO_PAT)
+      MANIFESTS_REPO: $(MANIFESTS_REPO)
+      APP_K8S_REPO: $(APP_K8S_REPO)
+      MANIFEST_RAW_URL: $(MANIFEST_RAW_URL)
+
+  - task: bash@3
+    inputs:
+      filePath: ./.pipelines/run-e2e-tests.sh
+      arguments: delete -y
+    displayName: 'Delete deployed infrastructure'
+    condition: succeededOrFailed()
+
+  - task: PublishTestResults@2
+    inputs:
+      testResultsFormat: 'JUnit'
+      testResultsFiles: '**/results-*.xml'
+    condition: succeededOrFailed()
+  

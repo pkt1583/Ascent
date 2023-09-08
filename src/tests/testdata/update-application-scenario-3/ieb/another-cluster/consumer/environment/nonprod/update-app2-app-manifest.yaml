@@ -1,0 +1,24 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: update-app2-nonprod
+  namespace: argocd
+  labels:
+    targetId: 67781334-e65e-429c-9ec3-428964fc92db
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: http://some-repo-url
+    targetRevision: main
+    path: somepath/nonprod/another-cluster
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: update-app-ns
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+    - CreateNamespace=true

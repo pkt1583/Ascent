@@ -1,0 +1,24 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: p-app4-nonprod
+  namespace: argocd
+  labels:
+    targetId: 06cff739-ffaa-4edd-ba12-85373b7cbdd3
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: http://some-repo-url
+    targetRevision: main
+    path: somepath/nonprod/p-cluster-1
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: p-test-ns
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+    - CreateNamespace=true

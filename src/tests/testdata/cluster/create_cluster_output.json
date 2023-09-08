@@ -1,0 +1,13 @@
+{
+  "name": "mycluster",
+  "short_name": "mc",
+  "environment": "nonprod",
+  "metadata": {
+    "purpose": "testing",
+    "ofType": "bdd",
+    "name": "mycluster"
+  },
+  "created_by": "testing user",
+  "updated_by": "testing user",
+  "onboard_status": "COMPLETED"
+}

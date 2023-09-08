@@ -1,0 +1,137 @@
+# Python to Linux Web App on Azure
+# Build your Python project and deploy it to Azure as a Linux Web App.
+# Change python version to one thats appropriate for your application.
+# https://docs.microsoft.com/azure/devops/pipelines/languages/python
+
+parameters:
+  - name: environment
+    default: dev
+    displayName: 'Select Environment to Deploy'
+    type: string
+    values:
+      - dev
+
+  - name: appServiceName
+    default: APPSVC-IE-PLAT-DEV-AUE
+    displayName: 'App Service'
+    type: string 
+
+trigger:
+  branches:
+    include:
+      - master
+  paths:
+    exclude:
+      - README.md
+      - spec
+      - '*.template'
+      - .dashboards/*
+      - .pipelines/*
+
+variables:
+  - group: ie_pipeline_secrets
+  
+  - group: plat_multistore_deployment_global 
+  
+  - group: plat_multistore_deployment_${{ parameters.environment }}
+
+  - name: isBuildFromManual
+    value: $[eq(variables['Build.Reason'], 'Manual')]
+
+  - name: isBuildFromMasterBranch
+    value: $[eq(variables['Build.SourceBranch'], 'refs/heads/master')]
+
+  - name: isBuildFromPR
+    value: $[eq(variables['Build.Reason'], 'PullRequest')]
+
+pool:
+  vmImage: $(vmImageName)
+
+stages:
+- stage: Build
+  displayName: Build stage
+  jobs:
+  - job: BuildJob
+    steps:
+    - task: UsePythonVersion@0
+      inputs:
+        versionSpec: '$(pythonVersion)'
+      displayName: 'Use Python $(pythonVersion)'
+
+    - script: |
+        pip install --index-url $(PIP_INDEX_URL) -r test-requirements.txt
+      displayName: "Install requirements"
+    - script: |
+        coverage run --source=. -m behave
+        coverage xml -o coverage.xml
+        behave --format json -o test_results.json
+        if jq '.[].status' test_results.json | grep -q -E 'failed|undefined'; then
+        echo "Behave tests failed. Breaking the build..."
+        exit 1
+        fi
+      displayName: "Running BDD Tests"
+      env:
+        AZURE_COSMOS_DATABASE_NAME: "coles"
+        BYPASS_AUTH_FOR_BEHAVE_TESTING: "true"
+    # - script: |
+    #     pylint app --output-format=parseable --output=pylint.log --fail-under=1
+    #   displayName: "Running Pylint"
+
+    # - script: |
+    #     pytest --doctest-modules --junitxml=junit/test-results.xml --cov=. --cov-report=xml --cov-fail-under=$(coverageThreshold)
+    #   displayName: 'Test with pytest'
+    - task: PublishTestResults@2
+      displayName: 'Publishing BDD Test results for ${{ parameters.appServiceName }}'
+      inputs:
+        testResultsFormat: 'JUnit'
+        testResultsFiles: '**/TESTS-*.xml'
+        testRunTitle: 'Publish BDD test results for ${{ parameters.appServiceName }}'
+
+    - task: PublishCodeCoverageResults@1
+      inputs:
+        codeCoverageTool: Cobertura
+        summaryFileLocation: '$(System.DefaultWorkingDirectory)/**/coverage.xml'
+      displayName: 'Publishing Code coverage via Cobertura'
+
+    - task: ArchiveFiles@2
+      inputs:
+        rootFolderOrFile: '$(projectRoot)'
+        includeRootFolder: false
+        archiveType: 'zip'
+        archiveFile: '$(Build.ArtifactStagingDirectory)/$(artifactName).zip'
+        replaceExistingArchive: true
+      condition: and(succeeded(), eq(variables.isBuildFromPR, false))
+      displayName: 'Archive files'
+      
+
+    - publish: $(Build.ArtifactStagingDirectory)/$(artifactName).zip
+      artifact: $(artifactName)
+      condition: and(succeeded(), eq(variables.isBuildFromPR, false))
+      displayName: 'Publishing package'
+
+
+- stage: Deploy
+  displayName: 'Deploy Web App'
+  dependsOn: Build
+  condition: or( and(succeeded(),eq(variables.isBuildFromManual, true)), and(succeeded(), eq(variables.isBuildFromMasterBranch, true) , eq(variables.isBuildFromPR, false)))
+  jobs:
+  - deployment: DeploymentJob
+    environment: ${{ parameters.environment }}
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - task: DownloadPipelineArtifact@2
+            inputs:
+              buildType: 'current'
+              artifactName: '$(artifactName)'
+              targetPath: '$(Build.ArtifactStagingDirectory)/deploy'
+
+          - task: AzureWebApp@1
+            displayName: 'Deploy Azure Web App : ${{ parameters.appServiceName }}'
+            inputs:
+              azureSubscription: $(azureServiceConnectionName)
+              appType: 'webAppLinux'
+              appName: '${{ parameters.appServiceName }}'
+              package: '$(Build.ArtifactStagingDirectory)/deploy/$(artifactName).zip'
+              startUpCommand: 'apt-get install git -y && git config --global user.name "botuser" && git config --global user.email "botuser@coles.com.au" &&  uvicorn app.app:app  --port 8000 --host 0.0.0.0 --proxy-headers'

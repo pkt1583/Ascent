@@ -1,0 +1,123 @@
+# Python to Linux Web App on Azure
+# Build your Python project and deploy it to Azure as a Linux Web App.
+# Change python version to one thats appropriate for your application.
+# https://docs.microsoft.com/azure/devops/pipelines/languages/python
+
+parameters:
+  - name: environment
+    default: int
+    displayName: 'Select Environment to Deploy'
+    type: string
+    values:
+      - int
+
+trigger: none
+
+variables:
+  - group: ie_pipeline_secrets
+  
+  - group: plat_multistore_deployment_global 
+  
+  - group: plat_multistore_deployment_${{ parameters.environment }}
+
+  - name: isBuildFromManual
+    value: $[eq(variables['Build.Reason'], 'Manual')]
+
+  - name: isBuildFromMasterBranch
+    value: $[eq(variables['Build.SourceBranch'], 'refs/heads/master')]
+
+  - name: isBuildFromPR
+    value: $[eq(variables['Build.Reason'], 'PullRequest')]
+
+pool:
+  vmImage: $(vmImageName)
+
+stages:
+- stage: Build
+  displayName: Build stage
+  jobs:
+  - job: BuildJob
+    steps:
+    - task: UsePythonVersion@0
+      inputs:
+        versionSpec: '$(pythonVersion)'
+      displayName: 'Use Python $(pythonVersion)'
+
+    - script: |
+        pip install --index-url $(PIP_INDEX_URL) -r test-requirements.txt
+      displayName: "Install requirements"
+
+    - task: ArchiveFiles@2
+      inputs:
+        rootFolderOrFile: '$(projectRoot)'
+        includeRootFolder: false
+        archiveType: 'zip'
+        archiveFile: '$(Build.ArtifactStagingDirectory)/$(artifactName).zip'
+        replaceExistingArchive: true
+      condition: and(succeeded(), eq(variables.isBuildFromPR, false))
+      displayName: 'Archive files'
+      
+
+    - publish: $(Build.ArtifactStagingDirectory)/$(artifactName).zip
+      artifact: $(artifactName)
+      condition: and(succeeded(), eq(variables.isBuildFromPR, false))
+      displayName: 'Publishing package'
+
+
+- stage: Deploy
+  displayName: 'Deploy Web App'
+  dependsOn: Build
+  condition: or( and(succeeded(),eq(variables.isBuildFromManual, true)), and(succeeded(), eq(variables.isBuildFromMasterBranch, true) , eq(variables.isBuildFromPR, false)))
+  jobs:
+  - deployment: DeploymentJob
+    environment: ${{ parameters.environment }}
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - task: DownloadPipelineArtifact@2
+            inputs:
+              buildType: 'current'
+              artifactName: '$(artifactName)'
+              targetPath: '$(Build.ArtifactStagingDirectory)/deploy'
+
+          - task: AzureWebApp@1
+            displayName: 'Deploy Azure Web App : $(appServiceName)'
+            inputs:
+              azureSubscription: $(azureServiceConnectionName)
+              appType: 'webAppLinux'
+              appName: '$(appServiceName)'
+              package: '$(Build.ArtifactStagingDirectory)/deploy/$(artifactName).zip'
+              startUpCommand: 'apt-get install git -y && git config --global user.name "botuser" && git config --global user.email "botuser@coles.com.au" &&  uvicorn app.app:app  --port 8000 --host 0.0.0.0 --proxy-headers'
+
+- stage: Delay
+  displayName: 'Delay for deployment process wait for 5 minutes'
+  dependsOn: Deploy
+  jobs:
+    - job:
+      steps:
+        - script: sleep 5m
+
+- stage: Test
+  displayName: 'Test of the application'
+  dependsOn: Delay
+  jobs:
+    - job: endToEndTestJob
+      steps:
+      - task: UsePythonVersion@0
+        inputs:
+          versionSpec: '$(pythonVersion)'
+        displayName: 'Use Python $(pythonVersion)'
+
+      - script: |
+          pip install --index-url $(PIP_INDEX_URL) -r test-requirements.txt
+        displayName: "Install requirements"
+
+      - script: |
+          python behave_end_to_end.py
+        displayName: "Running BDD end to end Tests"
+        env:
+          AZURE_COSMOS_DATABASE_NAME: "coles"
+          BYPASS_AUTH_FOR_BEHAVE_TESTING: "true"
+          AZURE_COSMOS_CONNECTION_STRING: $(AZURE_COSMOS_CONNECTION_STRING)
+          BASE_URL_FOR_E2E: $(BASE_URL_FOR_E2E)

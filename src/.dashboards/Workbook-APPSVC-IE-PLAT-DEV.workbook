@@ -1,0 +1,302 @@
+{
+  "version": "Notebook/1.0",
+  "items": [
+    {
+      "type": 9,
+      "content": {
+        "version": "KqlParameterItem/1.0",
+        "parameters": [
+          {
+            "id": "15357fe9-dd02-4461-95d1-08ab3133b904",
+            "version": "KqlParameterItem/1.0",
+            "name": "_timeRange",
+            "label": "Time Range",
+            "type": 4,
+            "description": "For picking Time ranges for all charts in this workbook",
+            "isGlobal": true,
+            "typeSettings": {
+              "selectableValues": [
+                {
+                  "durationMs": 300000
+                },
+                {
+                  "durationMs": 900000
+                },
+                {
+                  "durationMs": 1800000
+                },
+                {
+                  "durationMs": 3600000
+                },
+                {
+                  "durationMs": 14400000
+                },
+                {
+                  "durationMs": 43200000
+                },
+                {
+                  "durationMs": 86400000
+                },
+                {
+                  "durationMs": 172800000
+                },
+                {
+                  "durationMs": 259200000
+                },
+                {
+                  "durationMs": 604800000
+                },
+                {
+                  "durationMs": 1209600000
+                },
+                {
+                  "durationMs": 2419200000
+                },
+                {
+                  "durationMs": 2592000000
+                },
+                {
+                  "durationMs": 5184000000
+                },
+                {
+                  "durationMs": 7776000000
+                }
+              ],
+              "allowCustom": true
+            },
+            "timeContext": {
+              "durationMs": 86400000
+            },
+            "value": {
+              "durationMs": 2419200000
+            }
+          }
+        ],
+        "style": "pills",
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces"
+      },
+      "name": "parameters - 7"
+    },
+    {
+      "type": 1,
+      "content": {
+        "json": "## Multi-store deployment platform observability dashboard\n---\nThis observability dashboard shows the metrics from the deployed multi-store deployment platform.\n",
+        "style": "info"
+      },
+      "name": "text - 2"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "union withsource=[\"$TableName\"] *\n| summarize Count=count() by TableName=[\"$TableName\"]\n| render barchart",
+        "size": 1,
+        "timeContextFromParameter": "_timeRange",
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces"
+      },
+      "name": "query - 2"
+    },
+    {
+      "type": 10,
+      "content": {
+        "chartId": "workbook1fbee5e9-ed6c-4266-b209-738016f6c45f",
+        "version": "MetricsItem/2.0",
+        "size": 0,
+        "chartType": 1,
+        "resourceType": "microsoft.web/sites",
+        "metricScope": 0,
+        "resourceIds": [
+          "/subscriptions/0328d8d8-4b8d-484e-a82e-4affce418d19/resourceGroups/RG_IE_MSD_DEV_AUE/providers/Microsoft.Web/sites/APPSVC-IE-PLAT-DEV-AUE"
+        ],
+        "timeContextFromParameter": "_timeRange",
+        "timeContext": {
+          "durationMs": 2419200000
+        },
+        "metrics": [
+          {
+            "namespace": "microsoft.web/sites",
+            "metric": "microsoft.web/sites--Http5xx",
+            "aggregation": 1,
+            "splitBy": null,
+            "columnName": "Errors"
+          },
+          {
+            "namespace": "microsoft.web/sites",
+            "metric": "microsoft.web/sites--Http2xx",
+            "aggregation": 1,
+            "columnName": "HTTP 200"
+          }
+        ],
+        "gridSettings": {
+          "rowLimit": 10000
+        }
+      },
+      "name": "metric - 2"
+    },
+    {
+      "type": 10,
+      "content": {
+        "chartId": "workbook35cb6a1e-aeb4-4b54-85c7-bb1825d94532",
+        "version": "MetricsItem/2.0",
+        "size": 0,
+        "chartType": 2,
+        "resourceType": "microsoft.web/sites",
+        "metricScope": 0,
+        "resourceIds": [
+          "/subscriptions/0328d8d8-4b8d-484e-a82e-4affce418d19/resourceGroups/RG_IE_MSD_DEV_AUE/providers/Microsoft.Web/sites/APPSVC-IE-PLAT-DEV-AUE"
+        ],
+        "timeContextFromParameter": "_timeRange",
+        "timeContext": {
+          "durationMs": 2419200000
+        },
+        "metrics": [
+          {
+            "namespace": "microsoft.web/sites",
+            "metric": "microsoft.web/sites--Requests",
+            "aggregation": 1,
+            "splitBy": null,
+            "columnName": "Total Requests"
+          },
+          {
+            "namespace": "microsoft.web/sites",
+            "metric": "microsoft.web/sites--HttpResponseTime",
+            "aggregation": 4,
+            "columnName": "Avg Response Time"
+          }
+        ],
+        "gridSettings": {
+          "rowLimit": 10000
+        }
+      },
+      "name": "metric - 3"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "// Pie chart of HTTP response codes \r\n// Breakdown of response codes for each metric, over the last 12 hours.  \r\nAzureMetrics \r\n| where MetricName in (\"Http2xx\", \"Http3xx\", \"Http4xx\", \"Http5xx\") \r\n| summarize sum(Total) by MetricName ",
+        "size": 0,
+        "timeContextFromParameter": "_timeRange",
+        "queryType": 0,
+        "resourceType": "microsoft.web/sites",
+        "crossComponentResources": [
+          "/subscriptions/0328d8d8-4b8d-484e-a82e-4affce418d19/resourceGroups/RG_IE_MSD_DEV_AUE/providers/Microsoft.Web/sites/APPSVC-IE-PLAT-DEV-AUE"
+        ],
+        "visualization": "barchart"
+      },
+      "name": "query - 4"
+    },
+    {
+      "type": 10,
+      "content": {
+        "chartId": "265e4031-18e4-4daf-9a6c-ecbb23ac1f71",
+        "version": "MetricsItem/2.0",
+        "size": 0,
+        "chartType": 2,
+        "resourceType": "microsoft.web/sites",
+        "metricScope": 0,
+        "resourceIds": [
+          "/subscriptions/0328d8d8-4b8d-484e-a82e-4affce418d19/resourcegroups/rg_ie_msd_dev_aue/providers/microsoft.web/sites/appsvc-ie-plat-dev-aue"
+        ],
+        "timeContextFromParameter": "_timeRange",
+        "timeContext": {
+          "durationMs": 2419200000
+        },
+        "metrics": [
+          {
+            "namespace": "microsoft.web/sites",
+            "metric": "microsoft.web/sites--MemoryWorkingSet",
+            "aggregation": 4,
+            "splitBy": null
+          }
+        ],
+        "gridSettings": {
+          "rowLimit": 10000
+        }
+      },
+      "name": "metric - 6"
+    },
+    {
+      "type": 9,
+      "content": {
+        "version": "KqlParameterItem/1.0",
+        "parameters": [
+          {
+            "version": "KqlParameterItem/1.0",
+            "name": "TimeRange",
+            "label": "Time range",
+            "type": 4,
+            "isRequired": true,
+            "value": {
+              "durationMs": 604800000
+            },
+            "typeSettings": {
+              "selectableValues": [
+                {
+                  "durationMs": 300000
+                },
+                {
+                  "durationMs": 900000
+                },
+                {
+                  "durationMs": 1800000
+                },
+                {
+                  "durationMs": 3600000
+                },
+                {
+                  "durationMs": 14400000
+                },
+                {
+                  "durationMs": 43200000
+                },
+                {
+                  "durationMs": 86400000
+                },
+                {
+                  "durationMs": 172800000
+                },
+                {
+                  "durationMs": 259200000
+                },
+                {
+                  "durationMs": 604800000
+                },
+                {
+                  "durationMs": 1209600000
+                },
+                {
+                  "durationMs": 2419200000
+                },
+                {
+                  "durationMs": 2592000000
+                },
+                {
+                  "durationMs": 5184000000
+                },
+                {
+                  "durationMs": 7776000000
+                }
+              ],
+              "allowCustom": true
+            },
+            "id": "eee6c74b-d2e0-407a-bbf8-b737ae7681d0"
+          }
+        ],
+        "style": "above",
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces"
+      },
+      "name": "parameters"
+    }
+  ],
+  "fallbackResourceIds": [
+    "/subscriptions/0328d8d8-4b8d-484e-a82e-4affce418d19/resourcegroups/rg_ie_msd_dev_aue/providers/microsoft.operationalinsights/workspaces/law-ie-msd-dev-aue"
+  ],
+  "styleSettings": {
+    "paddingStyle": "narrow"
+  },
+  "$schema": "https://github.com/Microsoft/Application-Insights-Workbooks/blob/master/schema/workbook.json"
+}

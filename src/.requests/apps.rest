@@ -1,0 +1,35 @@
+### app1
+POST {{host}}/{{version}}/applications
+Content-Type: application/json
+
+{
+  "name": "app1",
+  "description": "string",
+  "repo_url": "https://dev.azure.com/colesgroup/Intelligent%20Edge/_git/plat_multistore_app_demo",
+  "repo_branch": "master",
+  "repo_path": "manifest/app1",
+  "metadata": {
+    "common": "true",
+     "gpu" : "false"
+  },
+  "namespace": "ieb"
+}
+
+### app2
+POST {{host}}/{{version}}/applications
+Content-Type: application/json
+
+{
+  "name": "app2",
+  "description": "string",
+"repo_url": "https://dev.azure.com/colesgroup/Intelligent%20Edge/_git/plat_multistore_app_demo",
+  "repo_branch": "master",
+  "repo_path": "manifest/app2",
+  "metadata": {
+    "common": "true",
+    "gpu": "true"
+  },
+  "namespace": "ieb"
+}
+
+

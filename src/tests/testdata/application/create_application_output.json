@@ -1,0 +1,14 @@
+{
+  "name": "myapp",
+  "created_by": "testing user",
+  "updated_by": "testing user",
+  "repo_url": "http://some-repo-url",
+  "repo_branch": "main",
+  "repo_path": "somepath",
+  "namespace": "mynsforapp",
+  "metadata": {
+    "app_type": "app-testing",
+    "name": "myapp"
+  },
+  "onboard_status": "COMPLETED"
+}

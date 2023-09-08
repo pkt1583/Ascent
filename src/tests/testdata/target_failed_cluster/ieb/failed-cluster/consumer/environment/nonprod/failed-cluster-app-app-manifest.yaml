@@ -1,0 +1,24 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: failed-cluster-app-nonprod
+  namespace: argocd
+  labels:
+    targetId: 7494e770-1500-4f0c-937b-20a98ca84bf5
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: http://some-repo-url
+    targetRevision: main
+    path: somepath/nonprod/failed-cluster
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: failed-cluster-ns
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+    - CreateNamespace=true

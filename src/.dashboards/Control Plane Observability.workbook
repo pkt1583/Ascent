@@ -1,0 +1,514 @@
+{
+  "version": "Notebook/1.0",
+  "items": [
+    {
+      "type": 1,
+      "content": {
+        "json": "# Target Information ![alt text]( https://github.com/adam-p/markdown-here/raw/master/src/common/images/icon48.png \"Logo Title Text 1\")\n"
+      },
+      "name": "text - 0"
+    },
+    {
+      "type": 9,
+      "content": {
+        "version": "KqlParameterItem/1.0",
+        "crossComponentResources": [
+          "/subscriptions/0328d8d8-4b8d-484e-a82e-4affce418d19/resourceGroups/RG_IE_MSD_DEV_AUE/providers/Microsoft.OperationalInsights/workspaces/LAW-IE-MSD-DEV-AUE"
+        ],
+        "parameters": [
+          {
+            "id": "ccfdfd2e-d7dd-4608-83ea-145c34723235",
+            "version": "KqlParameterItem/1.0",
+            "name": "TimeRange",
+            "type": 4,
+            "isRequired": true,
+            "typeSettings": {
+              "selectableValues": [
+                {
+                  "durationMs": 300000
+                },
+                {
+                  "durationMs": 900000
+                },
+                {
+                  "durationMs": 1800000
+                },
+                {
+                  "durationMs": 3600000
+                },
+                {
+                  "durationMs": 14400000
+                },
+                {
+                  "durationMs": 43200000
+                },
+                {
+                  "durationMs": 86400000
+                },
+                {
+                  "durationMs": 172800000
+                },
+                {
+                  "durationMs": 259200000
+                },
+                {
+                  "durationMs": 604800000
+                },
+                {
+                  "durationMs": 1209600000
+                },
+                {
+                  "durationMs": 2419200000
+                },
+                {
+                  "durationMs": 2592000000
+                },
+                {
+                  "durationMs": 5184000000
+                },
+                {
+                  "durationMs": 7776000000
+                }
+              ],
+              "allowCustom": true
+            },
+            "timeContext": {
+              "durationMs": 1800000
+            },
+            "value": {
+              "durationMs": 604800000
+            }
+          },
+          {
+            "id": "68bc2afe-5ad0-4da4-a132-818f01dc1366",
+            "version": "KqlParameterItem/1.0",
+            "name": "TargetId",
+            "type": 2,
+            "isRequired": true,
+            "query": "InsightsMetrics\n| where Name contains \"argocd_app_labels\"\n| extend Info = parse_json(Tags)\n| extend TargetIds = split(Info[\"label_targetId\"], \",\") // Split the comma-separated values\n| mv-expand TargetId = TargetIds // Expand the array into individual rows\n| where tostring(TargetId) != \"\"\n| order by TimeGenerated desc\n| summarize by tostring(TargetId)\n",
+            "crossComponentResources": [
+              "/subscriptions/0328d8d8-4b8d-484e-a82e-4affce418d19/resourceGroups/RG_IE_MSD_DEV_AUE/providers/Microsoft.OperationalInsights/workspaces/LAW-IE-MSD-DEV-AUE"
+            ],
+            "typeSettings": {
+              "additionalResourceOptions": [],
+              "showDefault": false
+            },
+            "timeContext": {
+              "durationMs": 0
+            },
+            "timeContextFromParameter": "TimeRange",
+            "queryType": 0,
+            "resourceType": "microsoft.operationalinsights/workspaces",
+            "value": "ad61c81e-5169-4f00-9696-bf0b118fcf79"
+          }
+        ],
+        "style": "pills",
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces"
+      },
+      "name": "parameters - 1"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "InsightsMetrics | where Name contains \"argocd_app_labels\" | extend InfoTargets = parse_json(Tags) | where InfoTargets[\"label_targetId\"] == '{TargetId}'  | extend AppName = tostring(InfoTargets[\"name\"]) | extend ClusterName = tostring(InfoTargets[\"container.azm.ms/clusterName\"])  | summarize arg_max(TimeGenerated,*) by AppName,ClusterName |\njoin kind=inner \n(InsightsMetrics | where Name contains \"argocd_app_info\" | extend Info = parse_json(Tags)\n | extend AppName = tostring(Info[\"name\"]) | extend DeploymentStatus = tostring(Info[\"health_status\"]) | \n extend SyncStatus = Info[\"sync_status\"] | extend ClusterName = tostring(Info[\"container.azm.ms/clusterName\"]) | summarize arg_max(TimeGenerated,*) by AppName,ClusterName)  \n on AppName,ClusterName\n| project TimeGenerated, AppName,DeploymentStatus,SyncStatus,ClusterName",
+        "size": 1,
+        "timeContextFromParameter": "TimeRange",
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces",
+        "crossComponentResources": [
+          "/subscriptions/0328d8d8-4b8d-484e-a82e-4affce418d19/resourceGroups/RG_IE_MSD_DEV_AUE/providers/Microsoft.OperationalInsights/workspaces/LAW-IE-MSD-DEV-AUE"
+        ],
+        "visualization": "tiles",
+        "tileSettings": {
+          "titleContent": {
+            "columnMatch": "AppName",
+            "formatter": 12,
+            "formatOptions": {
+              "palette": "blue"
+            }
+          },
+          "subtitleContent": {
+            "columnMatch": "SyncStatus",
+            "formatter": 18,
+            "formatOptions": {
+              "thresholdsOptions": "icons",
+              "thresholdsGrid": [
+                {
+                  "operator": "Default",
+                  "thresholdValue": null,
+                  "representation": "success",
+                  "text": "{0}{1}"
+                }
+              ]
+            }
+          },
+          "leftContent": {
+            "columnMatch": "DeploymentStatus",
+            "formatter": 18,
+            "formatOptions": {
+              "thresholdsOptions": "icons",
+              "thresholdsGrid": [
+                {
+                  "operator": "Default",
+                  "thresholdValue": null,
+                  "representation": "success",
+                  "text": "{0}{1}"
+                }
+              ]
+            }
+          },
+          "secondaryContent": {
+            "columnMatch": "ClusterName",
+            "formatter": 12,
+            "formatOptions": {
+              "palette": "blue"
+            }
+          },
+          "showBorder": true,
+          "size": "auto"
+        }
+      },
+      "name": "query - 2"
+    },
+    {
+      "type": 1,
+      "content": {
+        "json": "# Cluster Information ![alt text](https://github.com/adam-p/markdown-here/raw/master/src/common/images/icon48.png \"Logo Title Text 1\")\n\n"
+      },
+      "name": "text - 3"
+    },
+    {
+      "type": 9,
+      "content": {
+        "version": "KqlParameterItem/1.0",
+        "crossComponentResources": [
+          "/subscriptions/0328d8d8-4b8d-484e-a82e-4affce418d19/resourceGroups/RG_IE_MSD_DEV_AUE/providers/Microsoft.OperationalInsights/workspaces/LAW-IE-MSD-DEV-AUE"
+        ],
+        "parameters": [
+          {
+            "id": "68a07c4d-f692-4d97-853f-fb0a782fe3cc",
+            "version": "KqlParameterItem/1.0",
+            "name": "TimeRange",
+            "type": 4,
+            "isRequired": true,
+            "typeSettings": {
+              "selectableValues": [
+                {
+                  "durationMs": 300000
+                },
+                {
+                  "durationMs": 900000
+                },
+                {
+                  "durationMs": 1800000
+                },
+                {
+                  "durationMs": 3600000
+                },
+                {
+                  "durationMs": 14400000
+                },
+                {
+                  "durationMs": 43200000
+                },
+                {
+                  "durationMs": 86400000
+                },
+                {
+                  "durationMs": 172800000
+                },
+                {
+                  "durationMs": 259200000
+                },
+                {
+                  "durationMs": 604800000
+                },
+                {
+                  "durationMs": 1209600000
+                },
+                {
+                  "durationMs": 2419200000
+                },
+                {
+                  "durationMs": 2592000000
+                },
+                {
+                  "durationMs": 5184000000
+                },
+                {
+                  "durationMs": 7776000000
+                }
+              ]
+            },
+            "timeContext": {
+              "durationMs": 86400000
+            },
+            "value": {
+              "durationMs": 604800000
+            }
+          },
+          {
+            "id": "eac75f00-9310-4837-bf1a-45b1c94eaa91",
+            "version": "KqlParameterItem/1.0",
+            "name": "ClusterName",
+            "type": 2,
+            "isRequired": true,
+            "query": "InsightsMetrics | where Name contains \"argocd_app_info\" | extend Info = parse_json(Tags)\n| extend ClusterName = Info[\"container.azm.ms/clusterName\"] | summarize by tostring(ClusterName)\n| order by ClusterName asc",
+            "crossComponentResources": [
+              "/subscriptions/0328d8d8-4b8d-484e-a82e-4affce418d19/resourceGroups/RG_IE_MSD_DEV_AUE/providers/Microsoft.OperationalInsights/workspaces/LAW-IE-MSD-DEV-AUE"
+            ],
+            "typeSettings": {
+              "additionalResourceOptions": [],
+              "showDefault": false
+            },
+            "timeContext": {
+              "durationMs": 0
+            },
+            "timeContextFromParameter": "TimeRange",
+            "queryType": 0,
+            "resourceType": "microsoft.operationalinsights/workspaces",
+            "value": "east-nsw-newcastle-2940-01"
+          }
+        ],
+        "style": "pills",
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces"
+      },
+      "name": "parameters - 4"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "let argocd_app_info = \n    InsightsMetrics\n    | where Name contains \"argocd_app_info\" and tostring(parse_json(Tags)[\"container.azm.ms/clusterName\"]) == '{ClusterName}'\n    | extend AppName = tostring(parse_json(Tags)[\"name\"])\n    | extend DeploymentStatus = tostring(parse_json(Tags)[\"health_status\"])\n    | extend SyncStatus = tostring(parse_json(Tags)[\"sync_status\"])\n    | summarize arg_max(TimeGenerated, *) by AppName\n    | project AppName, DeploymentStatus, SyncStatus;\n\nlet argocd_app_sync_total = \n    InsightsMetrics\n    | where Name contains \"argocd_app_sync_total\" and  tostring(parse_json(Tags)[\"container.azm.ms/clusterName\"]) == '{ClusterName}'\n    | extend AppName = tostring(parse_json(Tags)[\"name\"])\n    | summarize arg_max(TimeGenerated, *) by AppName\n    | project AppName,TimeGenerated;\n\nlet joinedData = argocd_app_info\n| lookup kind=inner argocd_app_sync_total on AppName\n| project AppName, DeploymentStatus = strcat(\"Deployment Status :\" , DeploymentStatus), SyncStatus = strcat(\"Sync Status :\" ,SyncStatus), TimeGenerated = strcat(\"Last Sync Time : \" , TimeGenerated);\n\njoinedData",
+        "size": 1,
+        "timeContextFromParameter": "TimeRange",
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces",
+        "crossComponentResources": [
+          "/subscriptions/0328d8d8-4b8d-484e-a82e-4affce418d19/resourceGroups/RG_IE_MSD_DEV_AUE/providers/Microsoft.OperationalInsights/workspaces/LAW-IE-MSD-DEV-AUE"
+        ],
+        "visualization": "tiles",
+        "tileSettings": {
+          "titleContent": {
+            "columnMatch": "AppName",
+            "formatter": 12,
+            "formatOptions": {
+              "palette": "blue"
+            }
+          },
+          "subtitleContent": {
+            "columnMatch": "DeploymentStatus"
+          },
+          "leftContent": {
+            "columnMatch": "SyncStatus",
+            "formatter": 18,
+            "formatOptions": {
+              "thresholdsOptions": "icons",
+              "thresholdsGrid": [
+                {
+                  "operator": "==",
+                  "thresholdValue": "Sync Status :Unknown",
+                  "representation": "3",
+                  "text": "{0}{1}"
+                },
+                {
+                  "operator": "==",
+                  "thresholdValue": "Sync Status :Synced",
+                  "representation": "Available",
+                  "text": "{0}{1}"
+                },
+                {
+                  "operator": "Default",
+                  "thresholdValue": null,
+                  "representation": "success",
+                  "text": "{0}{1}"
+                }
+              ]
+            }
+          },
+          "secondaryContent": {
+            "columnMatch": "TimeGenerated",
+            "formatter": 1
+          },
+          "showBorder": true,
+          "size": "auto"
+        }
+      },
+      "name": "query - 5"
+    },
+    {
+      "type": 1,
+      "content": {
+        "json": "# App Information ![alt text](https://github.com/adam-p/markdown-here/raw/master/src/common/images/icon48.png \"Logo Title Text 1\")\n\n"
+      },
+      "name": "text - 6"
+    },
+    {
+      "type": 9,
+      "content": {
+        "version": "KqlParameterItem/1.0",
+        "crossComponentResources": [
+          "/subscriptions/0328d8d8-4b8d-484e-a82e-4affce418d19/resourceGroups/RG_IE_MSD_DEV_AUE/providers/Microsoft.OperationalInsights/workspaces/LAW-IE-MSD-DEV-AUE"
+        ],
+        "parameters": [
+          {
+            "id": "aae20407-22ed-4a9d-b29a-8f941aaa8606",
+            "version": "KqlParameterItem/1.0",
+            "name": "TimeRange",
+            "type": 4,
+            "isRequired": true,
+            "typeSettings": {
+              "selectableValues": [
+                {
+                  "durationMs": 300000
+                },
+                {
+                  "durationMs": 900000
+                },
+                {
+                  "durationMs": 1800000
+                },
+                {
+                  "durationMs": 3600000
+                },
+                {
+                  "durationMs": 14400000
+                },
+                {
+                  "durationMs": 43200000
+                },
+                {
+                  "durationMs": 86400000
+                },
+                {
+                  "durationMs": 172800000
+                },
+                {
+                  "durationMs": 259200000
+                },
+                {
+                  "durationMs": 604800000
+                },
+                {
+                  "durationMs": 1209600000
+                },
+                {
+                  "durationMs": 2419200000
+                },
+                {
+                  "durationMs": 2592000000
+                },
+                {
+                  "durationMs": 5184000000
+                },
+                {
+                  "durationMs": 7776000000
+                }
+              ]
+            },
+            "timeContext": {
+              "durationMs": 1800000
+            },
+            "value": {
+              "durationMs": 259200000
+            }
+          },
+          {
+            "id": "1b6d893a-9d13-400e-9499-d08146a6f152",
+            "version": "KqlParameterItem/1.0",
+            "name": "AppName",
+            "type": 2,
+            "isRequired": true,
+            "query": "InsightsMetrics | where Name contains \"argocd_app_info\" | extend Info = parse_json(Tags)\n | extend AppName = Info[\"name\"] | summarize by tostring(AppName)\n    | order by AppName asc",
+            "crossComponentResources": [
+              "/subscriptions/0328d8d8-4b8d-484e-a82e-4affce418d19/resourceGroups/RG_IE_MSD_DEV_AUE/providers/Microsoft.OperationalInsights/workspaces/LAW-IE-MSD-DEV-AUE"
+            ],
+            "typeSettings": {
+              "additionalResourceOptions": [],
+              "showDefault": false
+            },
+            "timeContext": {
+              "durationMs": 0
+            },
+            "timeContextFromParameter": "TimeRange",
+            "queryType": 0,
+            "resourceType": "microsoft.operationalinsights/workspaces",
+            "value": "alertservice-test-nonprod"
+          }
+        ],
+        "style": "pills",
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces"
+      },
+      "name": "parameters - 7"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "let argocd_app_info = InsightsMetrics | where Name contains \"argocd_app_info\" | extend Info = parse_json(Tags)\n | where Info[\"name\"] == '{AppName}' | extend ClusterName = Info[\"container.azm.ms/clusterName\"] | extend DeploymentStatus = Info[\"health_status\"] | \n extend SyncStatus = Info[\"sync_status\"] | sort by TimeGenerated desc | summarize arg_max(TimeGenerated,*) by tostring(ClusterName) | project ClusterName,DeploymentStatus,SyncStatus ; \n\nlet argocd_app_sync_total = \n    InsightsMetrics\n    | where Name contains \"argocd_app_sync_total\"\n    | extend Info = parse_json(Tags)\n    | where Info[\"name\"] == '{AppName}'\n    | extend ClusterName = Info[\"container.azm.ms/clusterName\"]\n    | summarize arg_max(TimeGenerated, *) by tostring(ClusterName)\n    | project ClusterName,TimeGenerated;\n\nlet joinedData = argocd_app_info\n| lookup kind=inner argocd_app_sync_total on ClusterName\n| project ClusterName, DeploymentStatus = strcat(\"Deployment Status :\" , DeploymentStatus), SyncStatus = strcat(\"Sync Status :\" ,SyncStatus), TimeGenerated = strcat(\"Last Sync Time : \" , TimeGenerated);\n\njoinedData",
+        "size": 1,
+        "timeContextFromParameter": "TimeRange",
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces",
+        "crossComponentResources": [
+          "/subscriptions/0328d8d8-4b8d-484e-a82e-4affce418d19/resourceGroups/RG_IE_MSD_DEV_AUE/providers/Microsoft.OperationalInsights/workspaces/LAW-IE-MSD-DEV-AUE"
+        ],
+        "visualization": "tiles",
+        "tileSettings": {
+          "titleContent": {
+            "columnMatch": "ClusterName",
+            "formatter": 12,
+            "formatOptions": {
+              "palette": "blue"
+            }
+          },
+          "subtitleContent": {
+            "columnMatch": "DeploymentStatus",
+            "formatter": 1
+          },
+          "rightContent": {
+            "columnMatch": "SyncStatus",
+            "formatter": 18,
+            "formatOptions": {
+              "thresholdsOptions": "icons",
+              "thresholdsGrid": [
+                {
+                  "operator": "==",
+                  "thresholdValue": "Sync Status :Unknown",
+                  "representation": "3",
+                  "text": "{0}{1}"
+                },
+                {
+                  "operator": "==",
+                  "thresholdValue": "Sync Status :Synced",
+                  "representation": "success",
+                  "text": "{0}{1}"
+                },
+                {
+                  "operator": "Default",
+                  "thresholdValue": null,
+                  "representation": "success",
+                  "text": "{0}{1}"
+                }
+              ]
+            }
+          },
+          "secondaryContent": {
+            "columnMatch": "TimeGenerated"
+          },
+          "showBorder": true,
+          "size": "auto"
+        }
+      },
+      "name": "query - 8"
+    }
+  ],
+  "fallbackResourceIds": [
+    "azure monitor"
+  ],
+  "$schema": "https://github.com/Microsoft/Application-Insights-Workbooks/blob/master/schema/workbook.json"
+}

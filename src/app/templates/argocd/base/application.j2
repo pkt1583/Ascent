@@ -1,0 +1,30 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: {{ metadata.name }}
+  namespace: {{ metadata.namespace }}
+  {%- if metadata.labels is defined and metadata.labels is not none%}
+  labels:
+    {{ metadata.labels }}
+  {%- endif %}
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: {{ spec.project }}
+  source:
+    repoURL: {{ spec.source.repoURL }}
+    targetRevision: {{ spec.source.targetRevision }}
+    path: {{ spec.source.path }}
+    {%- if spec.source.kustomize_version is defined and spec.source.kustomize_version is not none%}
+    kustomize:
+      version: {{ spec.source.kustomize_version }}
+    {%- endif %}
+  destination:
+    server: {{ spec.destination.server }}
+    namespace: {{ spec.destination.namespace }}
+  syncPolicy:
+    automated:
+      prune: {{ spec.syncPolicy.automated.prune }}
+      selfHeal: {{ spec.syncPolicy.automated.selfHeal }}
+    syncOptions:
+    - CreateNamespace=true

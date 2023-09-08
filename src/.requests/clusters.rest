@@ -1,0 +1,50 @@
+###Cluster 1
+POST {{host}}/{{version}}/clusters
+Content-Type: application/json
+
+{
+  "name": "east-nsw-newcastle-2940-01",
+  "description": "Edge Store for App Deployment in North India",
+  "shortName": "cluster1",
+  "environment": "nonprod",
+  "metadata": {
+    "gpu": "true",
+    "region": "east",
+    "country": "Australia",
+    "edge": "true"
+  }
+}
+
+
+###Cluster 2
+POST {{host}}/{{version}}/clusters
+Content-Type: application/json
+
+{
+  "name": "south-vic-Melbourne-32901-01",
+  "description": "Edge Store for App Deployment in North India",
+  "shortName": "cluster2",
+  "environment": "nonprod",
+  "metadata": {
+    "gpu": "true",
+    "region": "south",
+    "country": "Australia",
+    "edge": "true"
+  }
+}
+
+###Cluster 3
+POST {{host}}/{{version}}/clusters
+Content-Type: application/json
+
+{
+  "name": "east-nsw-sydney-1001-01",
+  "description": "Edge Store for App Deployment in North India",
+  "shortName": "cluster3",
+  "environment": "nonprod",
+  "metadata": {
+    "region": "east",
+    "country": "Australia",
+    "edge": "true"
+  }
+}

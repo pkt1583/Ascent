@@ -1,0 +1,58 @@
+### request 1
+POST {{host}}/{{version}}/targetpolicies
+Content-Type: application/json
+
+{
+  "name": "app1_to_melbourne",
+  "app_selector": {
+    "name": "app1"
+  },
+  "cluster_selector": {
+    "name": "south-vic-Melbourne-32901-01"
+  }
+}
+
+
+### request 2
+POST {{host}}/{{version}}/targetpolicies
+Content-Type: application/json
+
+{
+  "name": "app1-to-east",
+  "app_selector": {
+   "name": "app1"
+  },
+  "cluster_selector": {
+    "region": "east"
+  }
+}
+
+
+### request 3
+POST {{host}}/{{version}}/targetpolicies
+Content-Type: application/json
+
+{
+  "name": "app2-to-all",
+  "app_selector": {
+    "name": "app2"
+  },
+  "cluster_selector": {
+    "edge": "true"
+  }
+}
+
+
+### request 4
+POST {{host}}/{{version}}/targetpolicies
+Content-Type: application/json
+
+{
+  "name": "app1-app2-delete-from-edge",
+  "app_selector": {
+    "name": "app1,app2"
+  },
+  "cluster_selector": {
+    "edge": "true"
+  }
+}

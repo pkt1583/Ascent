@@ -1,0 +1,4 @@
+-r requirements.txt
+requests-toolbelt==1.0.0
+testcontainers-mongodb==0.0.1rc1
+behave==1.2.6

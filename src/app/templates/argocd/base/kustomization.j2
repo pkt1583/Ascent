@@ -1,0 +1,14 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+{% block resources %}
+resources:
+
+# self managed project and master app
+# - argocd/master-app-{{ shortProjectName }}.yaml
+  - argocd/master-manifest.yaml
+{% for item in items %}
+# {{ item }} environment{% for subitem in items[item] %}
+  - environment/{{ item }}/{{subitem.name}}{% endfor %}
+{% endfor %}
+{% endblock resources %}

@@ -1,0 +1,24 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: app1-nonprod
+  namespace: argocd
+  labels:
+    targetId: 8ad13beb-ec99-48c2-bb2d-46567c1a9db8
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://repoutl/plat_multistore_app_demo
+    targetRevision: master
+    path: manifest/app1/nonprod/south-vic-melbourne-32901-01
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: p-test-bug
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+    - CreateNamespace=true

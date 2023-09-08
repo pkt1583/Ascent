@@ -1,0 +1,24 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: targetpolicy-app-nonprod
+  namespace: argocd
+  labels:
+    targetId: 0919509d-fb81-44cf-9074-dbd38f89535f
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: http://some-repo-url
+    targetRevision: main
+    path: somepath/nonprod/targetpolicy-cluster
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: targetpolicyns
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+    - CreateNamespace=true
