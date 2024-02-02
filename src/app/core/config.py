@@ -15,7 +15,7 @@ class settings(BaseSettings):
     AZURE_COSMOS_CONNECTION_STRING: str = ""
     AZURE_COSMOS_DATABASE_NAME: str = ""
     APPLICATIONINSIGHTS_CONNECTION_STRING: Optional[str] = None
-    ARGOCD_MASTER_APPLICATION_REPO_URL: str = "https://dev.azure.com/colesgroup/Intelligent%20Edge/_git/plat_manifests"
+    ARGOCD_MASTER_APPLICATION_REPO_URL: str = "https://dev.azure.com/contoso/_git/plat_manifests"
     OTEL_SERVICE_NAME: str = "Control Plane API"  # https://github.com/microsoft/ApplicationInsights-Python/tree/main/azure-monitor-opentelemetry
     CONSOLE_LOG_LEVEL: str = "INFO"  # has to be caps
     OTEL_PYTHON_LOG_LEVEL: str = "INFO"  # https://opentelemetry-python-contrib.readthedocs.io/en/latest/instrumentation/logging/logging.html

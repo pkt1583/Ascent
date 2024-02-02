@@ -8,7 +8,7 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://dev.azure.com/colesgroup/Intelligent%20Edge/_git/plat_manifests
+    repoURL: https://dev.azure.com/contoso/_git/plat_manifests
     targetRevision: main
     path: ieb/p-cluster-1/consumer
   destination:

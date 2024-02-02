@@ -71,7 +71,7 @@ stages:
         fi
       displayName: "Running BDD Tests"
       env:
-        AZURE_COSMOS_DATABASE_NAME: "coles"
+        AZURE_COSMOS_DATABASE_NAME: "contoso"
         BYPASS_AUTH_FOR_BEHAVE_TESTING: "true"
     # - script: |
     #     pylint app --output-format=parseable --output=pylint.log --fail-under=1
@@ -134,4 +134,4 @@ stages:
               appType: 'webAppLinux'
               appName: '${{ parameters.appServiceName }}'
               package: '$(Build.ArtifactStagingDirectory)/deploy/$(artifactName).zip'
-              startUpCommand: 'apt-get install git -y && git config --global user.name "botuser" && git config --global user.email "botuser@coles.com.au" &&  uvicorn app.app:app  --port 8000 --host 0.0.0.0 --proxy-headers'
+              startUpCommand: 'apt-get install git -y && git config --global user.name "botuser" && git config --global user.email "botuser@contoso.com.au" &&  uvicorn app.app:app  --port 8000 --host 0.0.0.0 --proxy-headers'

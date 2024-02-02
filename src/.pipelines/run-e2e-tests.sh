@@ -1,6 +1,5 @@
 #!/bin/bash
 #shellcheck disable=SC2317
-# MANIFEST_RAW_URL to be like dev.azure.com/colesgroup/Intelligent%20Edge/_apis/git/repositories/64a9854b-253d-4935-b1de-211bf995aa2f
 # Set default values
 : "${RESOURCE_GROUP:=argoCdDemo}"
 : "${LOCATION:=eastus}"

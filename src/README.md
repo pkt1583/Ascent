@@ -14,7 +14,7 @@ This repo hosts the API code and its testing artifacts for Multi-store deploymen
 - A sample .env file at local enviroment may look like as shown below
 ```
 AZURE_COSMOS_CONNECTION_STRING="mongodb://root:rootpassword@localhost:27017"
-AZURE_COSMOS_DATABASE_NAME="coles"
+AZURE_COSMOS_DATABASE_NAME="contoso"
 APPLICATIONINSIGHTS_CONNECTION_STRING=""
 AZURE_DEVOPS_PAT=""
 BYPASS_AUTH_FOR_BEHAVE_TESTING="true"

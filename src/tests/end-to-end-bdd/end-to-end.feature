@@ -49,11 +49,11 @@ Feature: End to End Scenarios
     Given I am running in end to end mode
     When I hit the v1/applications to create a application with below data
       | name  | repo_url             | repo_branch | repo_path | metadata.label | namespace  |
-      | app1 | https://dev.azure.com/colesgroup/Intelligent%20Edge/_git/plat_multistore_app_demo | master      | manifest/app1 | app1          | end-to-end |
+      | app1 | https://dev.azure.com/contoso/_git/plat_multistore_app_demo | master      | manifest/app1 | app1          | end-to-end |
     Then The response status code should be 201
     When I hit the v1/applications to create a application with below data
       | name | repo_url                                                                                     | repo_branch | repo_path     | metadata.label | metadata.common  | namespace  |
-      | app2 | https://dev.azure.com/colesgroup/Intelligent%20Edge/_git/plat_multistore_app_demo | master      | manifest/app2 | app2   | true    | end-to-end |
+      | app2 | https://dev.azure.com/contoso/_git/plat_multistore_app_demo | master      | manifest/app2 | app2   | true    | end-to-end |
     Then The response status code should be 201
 
   Scenario: Targeting set up
